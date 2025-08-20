@@ -1,0 +1,93 @@
+package com.exemplo.usuarios.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.exemplo.usuarios.model.Usuarios;
+import com.exemplo.usuarios.service.UsuarioService;
+
+@RestController
+@RequestMapping("/api/usuarios") // Todas as requisições que começarem com "/api/produtos" serão
+public class UsuariosController { // direcionadas para esta classe.
+
+	@Autowired
+	private UsuarioService usuarioService;
+
+	// --- CREATE (Criar) ---
+	@PostMapping
+	public Usuarios criarUsuarios(@RequestBody Usuarios usuarios) {
+
+		return usuarioService.salvarUsuario(usuarios);
+
+	}
+
+	// --- READ (Ler) --- TODOS
+	@GetMapping
+	public List<Usuarios> listarTodosUsuarios() {
+
+		return usuarioService.buscarTodosUsuarios();
+	}
+
+	// --- READ (Ler) --- APENAS UM
+	@GetMapping("/{id}")
+	public ResponseEntity<Usuarios> buscarUsuariosPorId(@PathVariable("id") Long id) {
+
+		Optional<Usuarios> usuarios = usuarioService.buscarUsuarioPorId(id);
+
+		if (usuarios.isPresent()) {
+			return ResponseEntity.ok(usuarios.get());
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+
+	// --- UPDATE (Atualizar) ---
+	@PutMapping("/{id}")
+	public ResponseEntity<Usuarios> atualizarUsuarios(@PathVariable("id") Long id,
+			@RequestBody Usuarios detalhesUsuarios) {
+
+		Optional<Usuarios> usuariosOptional = usuarioService.buscarUsuarioPorId(id);
+
+		if (!usuariosOptional.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		Usuarios usuariosExistente = usuariosOptional.get();
+
+		usuariosExistente.setNome(detalhesUsuarios.getNome());
+		usuariosExistente.setCpf(detalhesUsuarios.getCpf());
+
+		if (detalhesUsuarios.getSenha() != null && !detalhesUsuarios.getSenha().isEmpty()) {
+			usuariosExistente.setSenha(detalhesUsuarios.getSenha());
+		}
+
+		final Usuarios usuarioAtualizado = usuarioService.salvarUsuario(usuariosExistente);
+		return ResponseEntity.ok(usuarioAtualizado);
+
+	}
+
+	// --- DELETE (Deletar) ---
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deletarUsuarios(@PathVariable("id") Long id) {
+
+		if (!usuarioService.buscarUsuarioPorId(id).isPresent()) {
+
+			return ResponseEntity.notFound().build();
+		}
+
+		usuarioService.deletarUsuario(id);
+
+		return ResponseEntity.noContent().build();
+	}
+
+}

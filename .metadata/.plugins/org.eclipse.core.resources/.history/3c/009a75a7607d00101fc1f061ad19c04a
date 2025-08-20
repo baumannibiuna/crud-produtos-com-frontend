@@ -1,0 +1,42 @@
+package com.exemplo.usuarios.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.exemplo.usuarios.model.Usuarios;
+import com.exemplo.usuarios.repository.UsuariosRepository;
+
+@Service
+public class UsuarioService {
+
+	
+	@Autowired
+	private UsuariosRepository usuariosRepository;
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
+	
+	public Usuarios salvarUsuario(Usuarios usuarios) {
+
+        String senhaCodificada = passwordEncoder.encode(usuarios.getSenha());
+        usuarios.setSenha(senhaCodificada);
+        
+        return usuariosRepository.save(usuarios);
+    }
+	
+    public List<Usuarios> buscarTodosUsuarios() {
+        return usuariosRepository.findAll();
+    }
+
+    public Optional<Usuarios> buscarUsuarioPorId(Long id) {
+        return usuariosRepository.findById(id);
+    }
+	
+    public void deletarUsuario(Long id) {
+        usuariosRepository.deleteById(id);
+    }
+	
+}

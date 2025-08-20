@@ -1,0 +1,17 @@
+spring.application.name=crud-produtos
+
+# Habilita o console do H2 para que possamos acessá-lo no navegador
+spring.h2.console.enabled=true
+
+# Define o caminho (URL) para o console do H2
+spring.h2.console.path=/h2-console
+
+# Configurações de conexão com o banco de dados em memória
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=root
+spring.datasource.password=12345678
+
+# Diz ao Hibernate (ferramenta do JPA) para criar ou atualizar as tabelas do banco
+# automaticamente com base nas nossas classes de Modelo (Entidades).
+spring.jpa.hibernate.ddl-auto=update

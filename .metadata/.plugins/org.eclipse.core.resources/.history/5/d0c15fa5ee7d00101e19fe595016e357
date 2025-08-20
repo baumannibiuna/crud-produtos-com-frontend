@@ -1,0 +1,88 @@
+/* package com.exemplo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+		http
+
+				.csrf(csrf -> csrf.disable())
+				// Desabilita o gerenciamento de sessões para que cada requisição seja independente.
+	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(
+						authorize -> authorize.requestMatchers("/api/produtos/**", "/api/usuarios/**", "/h2-console/**")
+								.permitAll().anyRequest().authenticated())
+
+				.formLogin(formLogin -> formLogin.disable())
+
+				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
+
+		return http.build();
+	}
+
+}
+*/
+
+package com.exemplo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            // Desabilita a proteção CSRF, pois é uma API REST.
+            .csrf(csrf -> csrf.disable())
+
+            // Desabilita o gerenciamento de sessões para que cada requisição seja independente.
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Define as regras de autorização para as requisições HTTP
+            .authorizeHttpRequests(authorize -> authorize
+                // Permite acesso a qualquer requisição que comece com /api/auth/**.
+                .requestMatchers("/api/auth/**").permitAll()
+                // Permite acesso a qualquer requisição que comece com /api/produtos/**.
+                .requestMatchers("/api/produtos/**").permitAll()
+                // Permite acesso ao console do H2.
+                .requestMatchers("/h2-console/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            // Desabilita o formulário de login padrão do Spring Security.
+            .formLogin(formLogin -> formLogin.disable())
+            
+            // Habilita o console do H2 para funcionar dentro de um frame
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.sameOrigin())
+            );
+
+        return http.build();
+    }
+}

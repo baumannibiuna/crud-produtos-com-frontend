@@ -1,0 +1,5 @@
+package com.exemplo.usuarios.dto;
+
+public class LoginDto {
+
+}

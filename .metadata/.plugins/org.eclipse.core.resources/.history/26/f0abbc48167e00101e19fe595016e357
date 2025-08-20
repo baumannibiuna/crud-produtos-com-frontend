@@ -1,0 +1,58 @@
+package com.exemplo.usuarios.controller;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.exemplo.usuarios.dto.LoginDto;
+import com.exemplo.usuarios.model.Usuarios;
+import com.exemplo.usuarios.repository.UsuariosRepository;
+
+@CrossOrigin(origins = "http://localhost:5173")
+@RestController
+@RequestMapping("/api/auth") // Endpoint base para autenticação
+public class AuthController {
+
+	// Injetamos o repositório para buscar o usuário no banco de dados.
+	@Autowired
+	private UsuariosRepository usuariosRepository;
+
+	// Injetamos o codificador de senha para comparar a senha fornecida com a do
+	// banco.
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
+
+	// Endpoint de login. Recebe um objeto LoginDto no corpo da requisição.
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+		// Primeiro, buscamos o usuário pelo nome de usuário (ou email, dependendo do
+		// seu modelo).
+		// Vamos supor que o campo 'nome' em 'Usuarios' seja o nome de usuário.
+		Optional<Usuarios> usuarioOptional = usuariosRepository.findByNome(loginDto.getUsername());
+
+		// Verificamos se o usuário existe e se a senha está correta.
+		if (usuarioOptional.isPresent()) {
+			Usuarios usuario = usuarioOptional.get();
+
+			// Usamos o passwordEncoder.matches() para comparar a senha em texto puro
+			// (do LoginDto) com a senha codificada do banco de dados.
+			if (passwordEncoder.matches(loginDto.getPassword(), usuario.getSenha())) {
+				// Se as senhas coincidem, o login é bem-sucedido.
+				// Retornamos uma resposta 200 OK.
+				// (Em um projeto real, você geraria um token JWT aqui).
+				return ResponseEntity.ok("Login bem-sucedido!");
+			}
+		}
+
+		// Se o usuário não for encontrado ou a senha estiver incorreta,
+		// retornamos um status de erro 401 Unauthorized.
+		return ResponseEntity.status(401).body("Credenciais inválidas.");
+	}
+}

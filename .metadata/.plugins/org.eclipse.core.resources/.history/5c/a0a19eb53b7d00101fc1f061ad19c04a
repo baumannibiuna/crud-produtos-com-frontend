@@ -1,0 +1,5 @@
+package com.exemplo.usuarios.model;
+
+public class Usuarios {
+
+}

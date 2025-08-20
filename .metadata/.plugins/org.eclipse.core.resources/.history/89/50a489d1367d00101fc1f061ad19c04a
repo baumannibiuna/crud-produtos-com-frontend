@@ -1,0 +1,5 @@
+package com.exemplo.crudprodutos.controller;
+
+public class ProdutoController {
+
+}

@@ -1,0 +1,80 @@
+package com.exemplo.crudprodutos.model;
+
+//Importa as anotações necessárias do pacote de persistência do Jakarta (antigo Java EE).
+//Persistência é o ato de salvar os dados de forma que eles continuem existindo após o programa fechar.
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+//A anotação @Entity diz ao Spring que esta classe é uma "entidade".
+//Isso significa que ela representa uma tabela em um banco de dados.
+@Entity
+//A anotação @Table (opcional) permite especificar o nome exato da tabela no banco de dados.
+//Se não usarmos, o nome da tabela seria o mesmo nome da classe, "produto".
+@Table(name = "produtos")
+public class Produto {
+
+ // A anotação @Id marca este campo como a chave primária da tabela.
+ // A chave primária é um identificador único para cada registro (cada produto).
+ @Id
+ // A anotação @GeneratedValue define a estratégia de geração da chave primária.
+ // GenerationType.IDENTITY significa que o próprio banco de dados será responsável por gerar o valor
+ // (geralmente, auto-incrementando: 1, 2, 3...).
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+
+ // Um campo simples para armazenar o nome do produto.
+ private String nome;
+
+ // Um campo para a descrição do produto.
+ private String descricao;
+
+ // Um campo para o preço do produto. Usamos Double para valores com casas decimais.
+ private double preco;
+
+ // Métodos Getters e Setters
+ // São métodos públicos que permitem que outras partes do nosso código acessem e modifiquem
+ // os campos privados desta classe de forma controlada. É uma boa prática do Java (Encapsulamento).
+
+ // O método 'getId' retorna o valor do campo 'id'.
+ public Long getId() {
+     return id;
+ }
+
+ // O método 'setId' define um novo valor para o campo 'id'.
+ public void setId(Long id) {
+     this.id = id;
+ }
+
+ // Retorna o nome do produto.
+ public String getNome() {
+     return nome;
+ }
+
+ // Define o nome do produto.
+ public void setNome(String nome) {
+     this.nome = nome;
+ }
+
+ // Retorna a descrição do produto.
+ public String getDescricao() {
+     return descricao;
+ }
+
+ // Define a descrição do produto.
+ public void setDescricao(String descricao) {
+     this.descricao = descricao;
+ }
+
+ // Retorna o preço do produto.
+ public double getPreco() {
+     return preco;
+ }
+
+ // Define o preço do produto.
+ public void setPreco(double preco) {
+     this.preco = preco;
+ }
+}

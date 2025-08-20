@@ -1,0 +1,5 @@
+package com.example.crudprodutos;
+
+public interface ProdutoRepository {
+
+}

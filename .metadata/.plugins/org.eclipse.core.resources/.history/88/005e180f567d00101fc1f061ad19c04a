@@ -1,0 +1,5 @@
+package com.exemplo.config;
+
+public class SecurityConfig {
+
+}

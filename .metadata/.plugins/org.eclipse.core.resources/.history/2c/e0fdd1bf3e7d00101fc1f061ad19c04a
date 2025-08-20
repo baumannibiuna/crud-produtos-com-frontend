@@ -1,0 +1,5 @@
+package com.exemplo.usuarios.controller;
+
+public class UsuariosController {
+
+}
