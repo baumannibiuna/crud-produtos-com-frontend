@@ -39,9 +39,9 @@ const AdminPage = () => {
                         {users.map(usuario => (
                             // A key é importante para o React gerenciar a lista de forma eficiente
                             <li key={usuario.id}>
-                                <h3>{usuario.nome}</h3>
-                                <p>{usuario.senha}</p>
-                                <p>Email: {usuario.email}</p>
+                                <h3>Nome: {usuario.nome}</h3>
+                                <p>CPF: {usuario.cpf}</p>
+                                <p>Senha: {usuario.senha}</p>
                             </li>
                         ))}
                     </ul>

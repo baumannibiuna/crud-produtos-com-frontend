@@ -1,10 +1,13 @@
 package com.exemplo.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService; // Mantenha este import
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -13,60 +16,56 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.exemplo.security.JwtAuthFilter;
-
-import java.util.Arrays;
+import com.exemplo.security.TokenService;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	
+	// Remova os @Autowired aqui
+	
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+	    return new BCryptPasswordEncoder();
+	}
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    
-    @Bean
-    public JwtAuthFilter jwtAuthFilter() {
-    	return new JwtAuthFilter();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // Adicione esta linha para habilitar a configuração de CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/produtos/**").permitAll()
-                .requestMatchers("/api/usuarios/**").authenticated()
-                .anyRequest().authenticated()
-            )
-            .formLogin(formLogin -> formLogin.disable())
-            .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
-            .headers(headers -> headers
-                .frameOptions(frameOptions -> frameOptions.sameOrigin())
-            );
-
-        return http.build();
-    }
-    
-    // Bean que configura a política de CORS para toda a aplicação
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // Permite requisições do seu frontend
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        // Permite os métodos que você usará (GET, POST, PUT, DELETE)
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        // Permite os cabeçalhos que você usará, incluindo o de Autorização
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        // Permite o envio de credenciais (como cookies ou tokens)
-        configuration.setAllowCredentials(true);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Aplica a configuração a todas as rotas
-        return source;
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(
+		HttpSecurity http,
+		// O Spring vai injetar o tokenService e o userDetailsService aqui
+		TokenService tokenService, 
+		UserDetailsService userDetailsService
+	) throws Exception {
+	    http
+	        .csrf(csrf -> csrf.disable())
+	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+	        .authorizeHttpRequests(authorize -> authorize
+	            .requestMatchers("/api/auth/**").permitAll()
+	            .requestMatchers("/api/produtos/**").permitAll()
+	            .requestMatchers("/api/usuarios/**").authenticated()
+	            .anyRequest().authenticated()
+	        )
+	        .formLogin(formLogin -> formLogin.disable())
+	        // Crie a nova instância do filtro, passando os serviços como parâmetros
+	        .addFilterBefore(new JwtAuthFilter(tokenService, userDetailsService), UsernamePasswordAuthenticationFilter.class)
+	        .headers(headers -> headers
+	            .frameOptions(frameOptions -> frameOptions.sameOrigin())
+	        );
+	
+	    return http.build();
+	}
+	
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+	    configuration.setAllowCredentials(true);
+	    
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
 }

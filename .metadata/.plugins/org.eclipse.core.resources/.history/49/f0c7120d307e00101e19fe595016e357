@@ -1,0 +1,72 @@
+package com.exemplo.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService; // Mantenha este import
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.exemplo.security.JwtAuthFilter;
+import com.exemplo.security.TokenService;
+
+import java.util.Arrays;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+	
+	// Remova os @Autowired aqui
+	
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+	    return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(
+		HttpSecurity http,
+		// O Spring vai injetar o tokenService e o userDetailsService aqui
+		TokenService tokenService, 
+		UserDetailsService userDetailsService
+	) throws Exception {
+	    http
+	        .csrf(csrf -> csrf.disable())
+	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+	        .authorizeHttpRequests(authorize -> authorize
+	            .requestMatchers("/api/auth/**").permitAll()
+	            .requestMatchers("/api/produtos/**").permitAll()
+	            .requestMatchers("/api/usuarios/**").authenticated()
+	            .anyRequest().authenticated()
+	        )
+	        .formLogin(formLogin -> formLogin.disable())
+	        // Crie a nova instância do filtro, passando os serviços como parâmetros
+	        .addFilterBefore(new JwtAuthFilter(tokenService, userDetailsService), UsernamePasswordAuthenticationFilter.class)
+	        .headers(headers -> headers
+	            .frameOptions(frameOptions -> frameOptions.sameOrigin())
+	        );
+	
+	    return http.build();
+	}
+	
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+	    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+	    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+	    configuration.setAllowCredentials(true);
+	    
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
+}
